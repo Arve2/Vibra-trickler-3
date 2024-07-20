@@ -11,6 +11,11 @@ import pwmio
 import digitalio
 import adafruit_vl6180x
 
+pwm_max = 35000
+pwm_min = 8000
+vl_far = 50 #millimeters. Scale beam down at bottom.
+vl_near = 10 #millimeters. Scale beam up near target weight.
+
 vl_scl = board.GP27 #SCL pin for VL6180X on leg 32
 vl_sda = board.GP26 #SDA pin for VL6180X on leg 31
 vib_gp = board.GP16 #PWM pin to vibrator (transistor array) on leg 21
@@ -19,7 +24,7 @@ led = digitalio.DigitalInOut(board.LED) #On-board LED
 led.direction = digitalio.Direction.OUTPUT
 
 i2c = busio.I2C(vl_scl, vl_sda) #I2C bus for VL ToF sensor
-vl = adafruit_vl6180x.VL6180X(i2c, offset=-10) #VL ToF sensor object
+vl = adafruit_vl6180x.VL6180X(i2c, offset=-0) #VL ToF sensor object
 
 pwm = pwmio.PWMOut(vib_gp, frequency=1000, duty_cycle=0) #PWM output object for vib
 
@@ -45,9 +50,40 @@ def vl_scan():
         print("I2C device found. Dec:", address, "Hex:", hex(address)) #Convert to Hex and print
     i2c.unlock()
 
-# @ToDo: Start trickling powder...
+# Start trickling powder...
 def trickle():
-    while True: #Read range and blink LED
-        print(vl.range)
+    should_run = True
+    while True:
+        #sleep(0.5)
         led.value = not led.value #Toggle on/off to indicate activity
-        sleep(0.1)
+        distance = vl.range
+        #Stop trickling if target weight is achieved...
+        if distance <= vl_near:
+            should_run = False
+        #Calculate PWM DC inversely proportional to distance...
+        vl_fraction = (distance - vl_near) / (vl_far - vl_near)
+        dc = vl_fraction * (pwm_max - pwm_min) + pwm_min
+        #Remove decimals and verify PWM range...
+        dc = int(dc)
+        if dc < pwm_min:
+            dc = pwm_min
+        if dc > pwm_max:
+            dc = pwm_max
+        print('Running:',should_run,' Distance',distance,'PWM DC',dc)
+        if should_run:
+            pwm.duty_cycle = dc
+        else:
+            pwm.duty_cycle = 0
+#         if distance > vl_far:
+#             pwm_dc = pwm_max
+#             print(distance, ' > ', vl_far, 'vl_fraction is', vl_fraction,'DC should be', pwm_dc)
+#         elif distance > vl_near:
+#             #LOGIX!
+#             pwm_dc = 20000
+#             print(distance, ' > ', vl_near, 'vl_fraction is', vl_fraction,'DC should be', pwm_dc)
+#         elif distance <= vl_near:
+#             should_run = False #STOP trickling
+#             pwm_dc = 0
+#             print(distance, ' <= ', vl_near, 'vl_fraction is', vl_fraction,'DC should be', pwm_dc)
+
+            
