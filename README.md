@@ -37,3 +37,18 @@ curl.exe https://raw.githubusercontent.com/adafruit/Adafruit_CircuitPython_BusDe
 
 Copy-Item -Path '.\code.py' -Destination "$picoDrive\"
 ```
+
+
+## Powder hopper and trickler
+@ToDo: 
+- Upload STL/3mf files to repo.
+- Images of pipe attachment and holes.
+- Build instructions?
+
+See https://a360.co/3Wv0UIo 
+
+Bill of materials:
+- 3D printed parts
+- 6 x 8mm aluminium pipe like [this](https://www.byggmax.se/r%C3%B6r-aluminium-silver-%C3%B88x11m-p208114) or [this](https://www.stahl-shop24.de/Alu-Rundrohr-8x1mm-1000mm)
+- Small screw
+- 3...5V DC vibrator motor (see circuit diagram)
