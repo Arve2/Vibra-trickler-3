@@ -4,15 +4,15 @@ print('code.py starting...')
 #  ...\lib\adafruit_bus_device\i2c_device.py
 
 
-from time import sleep
+from time import sleep, time
 import board
 import busio
 import pwmio
 import digitalio
 import adafruit_vl6180x
 
-pwm_max = 35000
-pwm_min = 8000
+pwm_max = 60000 # (60000 --> 3,9V)
+pwm_min = 6000 # (7000 --> Starts MOST times. 6000 --> Starts SOME times)
 vl_far = 50 #millimeters. Scale beam down at bottom.
 vl_near = 10 #millimeters. Scale beam up near target weight.
 
@@ -50,6 +50,20 @@ def vl_scan():
         print("I2C device found. Dec:", address, "Hex:", hex(address)) #Convert to Hex and print
     i2c.unlock()
 
+# Try getting a number of readings from sensor...
+def vl_stats(n=50):
+    seconds_start = time()
+    array = []
+    for counter in range(n):
+        array.append(vl.range)
+        print(vl.range)
+    sorted_array = sorted(array)
+    #print('Raw distances:\n',array)
+    #print('Sorted distances:\n',sorted(array))
+    print('Time spent:', (time() - seconds_start), 'seconds')
+    print('Median (kinda):', sorted_array[int(n/2)])
+    print('Min:',sorted_array[0], 'Max:', sorted_array[-1])
+
 # Start trickling powder...
 def trickle():
     should_run = True
@@ -57,13 +71,13 @@ def trickle():
         #sleep(0.5)
         led.value = not led.value #Toggle on/off to indicate activity
         distance = vl.range
-        #Stop trickling if target weight is achieved...
+        #Stop trickling if target weight is achieved
         if distance <= vl_near:
             should_run = False
-        #Calculate PWM DC inversely proportional to distance...
+        #Calculate PWM DC inversely proportional to distance
         vl_fraction = (distance - vl_near) / (vl_far - vl_near)
         dc = vl_fraction * (pwm_max - pwm_min) + pwm_min
-        #Remove decimals and verify PWM range...
+        #Remove decimals and verify PWM range
         dc = int(dc)
         if dc < pwm_min:
             dc = pwm_min
