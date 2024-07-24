@@ -13,7 +13,7 @@ import adafruit_vl6180x
 
 pwm_max = 60000 #(60000 --> 3,9V)
 pwm_min = 6000  #(7000 --> Starts MOST times. 6000 --> Starts SOME times)
-vl_far = 50     #millimeters distance when scale beam is down at bottom.
+vl_far =  50    #millimeters distance when scale beam is down at bottom.
 vl_near = 10    #millimeters distance when scale beam is up near target weight.
 
 vl_scl =     board.GP27  #SCL for VL6180X on leg 32
@@ -28,7 +28,7 @@ led.direction = digitalio.Direction.OUTPUT
 
 btn_start = digitalio.DigitalInOut(pin_start) #Start button
 btn_stop = digitalio.DigitalInOut(pin_stop) #Stop button
-btn_manual = digitalio.DigitalInOut(pin_manual) #Manual run button
+btn_manual = digitalio.DigitalInOut(pin_manual) #Manual run button. Not implemented (yet)
 for btn in (btn_start, btn_stop, btn_manual):
     btn.direction = digitalio.Direction.INPUT
     btn.pull = digitalio.Pull.UP #Default to high. Pushing button --> GND --> Low.
@@ -91,15 +91,22 @@ def trickle():
     should_run = True
     while True:
         #sleep(0.5)
-        led.value = not led.value #Toggle on/off to indicate activity
         distance = vl.range
-        #Stop trickling if target weight is achieved
-        if distance <= vl_near:
+        if distance <= vl_near: #Beam near --> Don't run
             should_run = False
+            led.value = False #LED off to indicate button press
+        elif not btn_stop.value: #Stop button --> Don't run
+            should_run = False
+            led.value = False #LED off to indicate button press
+        elif not btn_start.value: #Start button --> run
+            should_run = True
+            led.value = False #LED off to indicate button press
+        else:
+            led.value = not led.value #LED flicker to indicate activity
         #Calculate PWM DC inversely proportional to distance
         vl_fraction = (distance - vl_near) / (vl_far - vl_near)
         dc = vl_fraction * (pwm_max - pwm_min) + pwm_min
-        #Remove decimals and verify PWM range
+        #Remove decimals and limit PWM to acceptable range
         dc = int(dc)
         if dc < pwm_min:
             dc = pwm_min
@@ -110,16 +117,3 @@ def trickle():
             pwm.duty_cycle = dc
         else:
             pwm.duty_cycle = 0
-#         if distance > vl_far:
-#             pwm_dc = pwm_max
-#             print(distance, ' > ', vl_far, 'vl_fraction is', vl_fraction,'DC should be', pwm_dc)
-#         elif distance > vl_near:
-#             #LOGIX!
-#             pwm_dc = 20000
-#             print(distance, ' > ', vl_near, 'vl_fraction is', vl_fraction,'DC should be', pwm_dc)
-#         elif distance <= vl_near:
-#             should_run = False #STOP trickling
-#             pwm_dc = 0
-#             print(distance, ' <= ', vl_near, 'vl_fraction is', vl_fraction,'DC should be', pwm_dc)
-
-            
