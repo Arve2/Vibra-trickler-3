@@ -11,17 +11,27 @@ import pwmio
 import digitalio
 import adafruit_vl6180x
 
-pwm_max = 60000 # (60000 --> 3,9V)
-pwm_min = 6000 # (7000 --> Starts MOST times. 6000 --> Starts SOME times)
-vl_far = 50 #millimeters. Scale beam down at bottom.
-vl_near = 10 #millimeters. Scale beam up near target weight.
+pwm_max = 60000 #(60000 --> 3,9V)
+pwm_min = 6000  #(7000 --> Starts MOST times. 6000 --> Starts SOME times)
+vl_far = 50     #millimeters distance when scale beam is down at bottom.
+vl_near = 10    #millimeters distance when scale beam is up near target weight.
 
-vl_scl = board.GP27 #SCL pin for VL6180X on leg 32
-vl_sda = board.GP26 #SDA pin for VL6180X on leg 31
-vib_gp = board.GP16 #PWM pin to vibrator (transistor array) on leg 21
+vl_scl =     board.GP27  #SCL for VL6180X on leg 32
+vl_sda =     board.GP26  #SDA for VL6180X on leg 31
+pin_start =  board.GP4   #Start button on leg 6
+pin_stop =   board.GP8   #Stop button on leg 11
+pin_manual = board.GP12  #Manual run button on leg 16
+vib_gp =     board.GP16  #PWM pin to vibrator (transistor array) on leg 21
 
 led = digitalio.DigitalInOut(board.LED) #On-board LED
 led.direction = digitalio.Direction.OUTPUT
+
+btn_start = digitalio.DigitalInOut(pin_start) #Start button
+btn_stop = digitalio.DigitalInOut(pin_stop) #Stop button
+btn_manual = digitalio.DigitalInOut(pin_manual) #Manual run button
+for btn in (btn_start, btn_stop, btn_manual):
+    btn.direction = digitalio.Direction.INPUT
+    btn.pull = digitalio.Pull.UP #Default to high. Pushing button --> GND --> Low.
 
 i2c = busio.I2C(vl_scl, vl_sda) #I2C bus for VL ToF sensor
 vl = adafruit_vl6180x.VL6180X(i2c, offset=-0) #VL ToF sensor object
@@ -60,9 +70,21 @@ def vl_stats(n=50):
     sorted_array = sorted(array)
     #print('Raw distances:\n',array)
     #print('Sorted distances:\n',sorted(array))
-    print('Time spent:', (time() - seconds_start), 'seconds')
-    print('Median (kinda):', sorted_array[int(n/2)])
-    print('Min:',sorted_array[0], 'Max:', sorted_array[-1])
+    print(n, 'readings in', (time() - seconds_start), 'seconds')
+    print('Min:',sorted_array[0], 'Max:', sorted_array[-1], 'Median (kind of):', sorted_array[int(n/2)])
+
+# Test buttons...
+def btn_test():
+    while True:
+        digit_start = int(not btn_start.value) #Convert Pressed/Low/False to 1
+        digit_stop = int(not btn_stop.value)
+        digit_manual = int(not btn_manual.value)
+        print('Start button:', digit_start, '  Stop button:', digit_stop, '  Manual button:', digit_manual)
+        if 1 in (digit_start, digit_stop, digit_manual): #Shine onboard LED i any button is pressed
+            led.value = True 
+        else:
+            led.value = False
+        sleep(0.3)
 
 # Start trickling powder...
 def trickle():
