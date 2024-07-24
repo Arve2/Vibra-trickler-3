@@ -88,7 +88,7 @@ def btn_test():
 
 # Start trickling powder...
 def trickle():
-    should_run = True
+    should_run = False #Default --> Don't run before Start button
     while True:
         #sleep(0.5)
         distance = vl.range
@@ -117,3 +117,5 @@ def trickle():
             pwm.duty_cycle = dc
         else:
             pwm.duty_cycle = 0
+
+trickle() #Auto-start trickling. Thonny/REPL console will interrupt this.
