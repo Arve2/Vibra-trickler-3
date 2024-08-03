@@ -14,7 +14,7 @@ On PC...
 1. _The Pico boot sector will now appear as a storage device, `RPI-RP2` in file explorer._
 1. On PC: Copy-paste the UF2 file to the `RPI-RP2` storage device.
 1. _The Pico will reboot, loading the new CircuitPython._
-1. Check File Explorer. After installing CircuitPython, the Pico should appear as `PICODRIVE`. Note the driveletter.
+1. Check your file explorer. After installing CircuitPython, the Pico should appear as `PICODRIVE`. Note the driveletter (Usually `D:` or `E:`).
 
 ## Install and configure Thonny editor
 On PC...
@@ -31,15 +31,15 @@ _Besides CircuitPython, Adafruit provides an [addon module for VL6180X](https://
 On PC...
 1. Download [adafruit_vl6180x.py](https://github.com/adafruit/Adafruit_CircuitPython_VL6180X/blob/main/adafruit_vl6180x.py) and copy it to `<Pico driveletter>:\lib\adafruit_vl6180x.py` 
    - a) manually, or 
-   - b) with CMD.exe: `curl.exe https://raw.githubusercontent.com/adafruit/Adafruit_CircuitPython_VL6180X/main/adafruit_vl6180x.py --output D:\lib\adafruit_vl6180x.py --create-dirs` _Adjust driveletter accrodingly!_
+   - b) with `CMD.exe`: `curl.exe https://raw.githubusercontent.com/adafruit/Adafruit_CircuitPython_VL6180X/main/adafruit_vl6180x.py --output D:\lib\adafruit_vl6180x.py --create-dirs` _Adjust driveletter accordingly!_
 
-## Copy project software to Pico root folder
+## Copy this project code to Pico root folder
 _Now, let's add the secret sauce of this project!_
 
 On PC...
 1. Download [.\code.py](https://github.com/arve2/Vibra-trickler-3/blob/main/code.py) and copy it to `<Pico driveletter>:\code.py` 
    - a) manually, or 
-   - b) with CMD.exe: `curl.exe https://raw.githubusercontent.com/arve2/Vibra-trickler-3/main/code.py --output D:\code.py --create-dirs` _Adjust driveletter accrodingly!_
+   - b) with `CMD.exe`: `curl.exe https://raw.githubusercontent.com/arve2/Vibra-trickler-3/main/code.py --output D:\code.py` _Adjust driveletter accordingly!_
 
 
 ## Powder hopper and trickler
