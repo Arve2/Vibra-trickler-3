@@ -1,8 +1,9 @@
 # Vibra-trickler-3
 Since I can't stop dreaming about the perfect auto-trickler
 
-
-
+## Overview
+![Overview photo of assembled kit](media/overview.jpg)
+@ToDo: More info about basic design principles.
 
 ## Install CircuitPython
 On PC...
