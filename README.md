@@ -56,3 +56,13 @@ Bill of materials:
 - 6 x 8mm aluminium pipe like [this](https://www.byggmax.se/r%C3%B6r-aluminium-silver-%C3%B88x11m-p208114) or [this](https://www.stahl-shop24.de/Alu-Rundrohr-8x1mm-1000mm)
 - Small screw
 - 3...5V DC vibrator motor (see circuit diagram)
+
+# Design considerations
+I am quite pleased with my original [Vibra-trickler 1](https://youtu.be/v3MtZg-lgy8?si=bmgzrVPSmXZy_p-L) but would like it to throw charges _faster_. This prooved hard because of physical latency/inertia of the scale beam. It was also quite cumbersome to reproduce (solder!) the extensive circuitry. Hence I tried an all-out digital and app-controlled design in [Vibra-trickler 2](https://github.com/Arve2/Vibra-trickler-2). However, the signal noise had to be mitigated, resulting in _computing_ latencies. So the time saved was only a few seconds compared to v1. 
+
+The main ideas behind this v3 project is to use
+- the vibra-trickling approach and a trusted analogue scale from v1, but 
+- digital processing and PWM control from v2, and
+- a scale with lighter beam (=lower latency), such as the [Lee Safety scale](https://leeprecision.com/powder-handling-lee-safety-powder-scale).
+
+Since v1, a number of interesting "VL" ToF sensors have popped up on the makers market. With a VL6180X, it should be possible to measure the position of an analogue scale beam, and decrease the trickling speed inversely proportional to the it rising. 
