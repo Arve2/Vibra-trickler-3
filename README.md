@@ -1,13 +1,27 @@
 # Vibra-trickler-3
-Since I can't stop dreaming about the perfect auto-trickler
+My third and best take on creating a simple and reliable automatic powder trickler for handloading. Since changing a lot (most!) of the code, this readme file is under reconstruction, so please check back next week. (I don't usually test my code, but when I do - I do it in Main branch.)
 
-## Overview
-![Overview photo of assembled kit](media/overview.jpg)
-@ToDo: More info about basic design principles.
+40gr of rifle powder takes 15...20s. Most throws are spot on "0" - better than I can trickle powder by hand.
+
+Overview and operations (video): \
+<a href="https://youtu.be/m2H_ZvZXtMM"><img src="./media/overview.jpg" width="400" ></a>
+
+| Logic view | Breadboard view |
+|----|----|
+|<a href="./media/circuit_diagram.jpg"><img src="./media/circuit_diagram.jpg" width="300" ></a>|<a href="./media/breadboard_above.jpg"><img src="./media/breadboard_above.jpg" width="300" ></a>|
+
+
+## Bill of materials
+@2Do
+
+## Assemble hardware
+@2Do
 
 ## Install CircuitPython
+_Before starting, the Pico needs some firmware to run Python code._
+
 On PC...
-1. Download latest version of CircuitPython UF2 firmware file for [Pico W](https://circuitpython.org/board/raspberry_pi_pico_w/) or [Pico](https://circuitpython.org/board/raspberry_pi_pico/), preferably English-US language. _I used v9.1.0_
+1. Download latest version of CircuitPython UF2 firmware file for [Pico W](https://circuitpython.org/board/raspberry_pi_pico_w/) or [Pico](https://circuitpython.org/board/raspberry_pi_pico/). _I used v9.1.0_
 1. On Pico: 
    - Press and hold `BOOTSEL` button 
    - Connect to PC with USB cable
@@ -15,7 +29,13 @@ On PC...
 1. _The Pico boot sector will now appear as a storage device, `RPI-RP2` in file explorer._
 1. On PC: Copy-paste the UF2 file to the `RPI-RP2` storage device.
 1. _The Pico will reboot, loading the new CircuitPython._
-1. Check your file explorer. After installing CircuitPython, the Pico should appear as `PICODRIVE`. Note the driveletter (Usually `D:` or `E:`).
+1. _The Pico file storage will now appear as a storage device, `CRICUITPI` or `PICODRIVE` in file explorer. Usually driveletter `D:` or `E:`_
+
+## Copy vibra-trickler code to Pico root folder
+_Now, let's add code.py - the secret sauce of this project!_
+
+On PC...
+1. Download [.\code.py](https://github.com/arve2/Vibra-trickler-3/blob/main/code.py) to `<Pico driveletter:>\code.py` _If the Pico drive already contains an example file named `code.py`:. Remove or overwrite it._
 
 ## Install and configure Thonny editor
 On PC...
@@ -25,22 +45,6 @@ On PC...
    - Port or WebREPL: `CircuitPython CDC control @ COMx` _Auto-detection sometimes fail with CircuitPython._
    - Click `OK`
 1. Thonny should now show, at the bottom right `MicroPython (Raspberry Pi Pico) - Board CDC @ COMX`.
-
-## Download Adafruit ToF sensor modules to /lib folder
-_Besides CircuitPython, Adafruit provides an [addon module for VL6180X](https://github.com/adafruit/Adafruit_CircuitPython_VL6180X/). I used [r1.4.12](https://github.com/adafruit/Adafruit_CircuitPython_VL6180X/releases/tag/1.4.12)_
-
-On PC...
-1. Download [adafruit_vl6180x.py](https://github.com/adafruit/Adafruit_CircuitPython_VL6180X/blob/main/adafruit_vl6180x.py) and copy it to `<Pico driveletter>:\lib\adafruit_vl6180x.py` 
-   - a) manually, or 
-   - b) with `CMD.exe`: `curl.exe https://raw.githubusercontent.com/adafruit/Adafruit_CircuitPython_VL6180X/main/adafruit_vl6180x.py --output D:\lib\adafruit_vl6180x.py --create-dirs` _Adjust driveletter accordingly!_
-
-## Copy this project code to Pico root folder
-_Now, let's add the secret sauce of this project!_
-
-On PC...
-1. Download [.\code.py](https://github.com/arve2/Vibra-trickler-3/blob/main/code.py) and copy it to `<Pico driveletter>:\code.py` 
-   - a) manually, or 
-   - b) with `CMD.exe`: `curl.exe https://raw.githubusercontent.com/arve2/Vibra-trickler-3/main/code.py --output D:\code.py` _Adjust driveletter accordingly!_
 
 
 ## Powder hopper and trickler
