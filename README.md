@@ -1,5 +1,7 @@
 # Vibra-trickler-3
-My third and best take on creating a simple and reliable automatic powder trickler for handloading. Since changing a lot (most!) of the code, this readme file is under reconstruction, so please check back next week. (I don't usually test my code, but when I do - I do it in Main branch.)
+My third and best take on creating a simple and reliable automatic powder trickler for handloading. 
+
+**Since changing a lot (most!) of the code, this readme file is under reconstruction, so please check back next week. (I don't usually test my code, but when I do - I do it in Main branch.)**
 
 40gr of rifle powder takes 15...20s. Most throws are spot on "0" - better than I can trickle powder by hand.
 
@@ -10,9 +12,20 @@ Overview and operations (video): \
 |----|----|
 |<a href="./media/circuit_diagram.jpg"><img src="./media/circuit_diagram.jpg" width="300" ></a>|<a href="./media/breadboard_above.jpg"><img src="./media/breadboard_above.jpg" width="300" ></a>|
 
+## Intended audience
+_Me_, I'm an electronics nerd and a handloader. If _you_ are "only" a handloader looking to automate your Lee scale: just follow the do't and dont's in the first part of this readme. If you are a nerd, wanting to replace components or tweak the design: There will be a part for you at the end.
+
+# Part 1: Do It Yourself
 
 ## Bill of materials
-@2Do
+- 1x Mini vibrator from a scrapped cellphone
+- 1x [Raspberry Pi Pico](https://www.electrokit.com/en/raspberry-pi-pico-h) or [Pico W](https://www.electrokit.com/en/raspberry-pi-pico-wh). _Pico 2 or 2W should work but are not tested._
+- 1x [Breadboard](https://www.electrokit.com/en/kopplingsdack-400-anslutningar) or [breadboard pattern PCB](https://www.electrokit.com/en/experimentkort-breadboard-400-hal).
+  - If PCB: Consider 2x [20pin headers](https://www.electrokit.com/en/hylslist-2.54mm-1x20p) to make the Pico removable.
+- 6 x 8mm aluminium pipe like [this](https://www.byggmax.se/r%C3%B6r-aluminium-silver-%C3%B88x11m-p208114) or [this](https://www.stahl-shop24.de/Alu-Rundrohr-8x1mm-1000mm)
+
+https://a360.co/3Wv0UIo
+
 
 ## Assemble hardware
 @2Do
@@ -57,7 +70,7 @@ See https://a360.co/3Wv0UIo
 
 Bill of materials:
 - 3D printed parts
-- 6 x 8mm aluminium pipe like [this](https://www.byggmax.se/r%C3%B6r-aluminium-silver-%C3%B88x11m-p208114) or [this](https://www.stahl-shop24.de/Alu-Rundrohr-8x1mm-1000mm)
+
 - Small screw
 - 3...5V DC vibrator motor (see circuit diagram)
 
@@ -70,3 +83,5 @@ The main ideas behind this v3 project is to use
 - a scale with lighter beam (=lower latency), such as the [Lee Safety scale](https://leeprecision.com/powder-handling-lee-safety-powder-scale).
 
 Since v1, a number of interesting "VL" ToF sensors have popped up on the makers market. With a VL6180X, it should be possible to measure the position of an analogue scale beam, and decrease the trickling speed inversely proportional to the it rising. 
+
+## Vibrators
