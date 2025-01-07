@@ -8,7 +8,7 @@ Overview and operations (video): \
 
 The key features of this design is:
 - Fast, automatic weighing of powder. _40gr takes ~15...20s._
-- Cheap and easy to build, event for non-nerds. _12 electrical components, a 3D print and some common garage hardware._
+- Cheap and easy to build, event for non-nerds. _Only twelve electrical components and some common garage hardware._
 - Safety. _I.e. not mixing gunpowder with high current motors._
 - Reliability. _I.e. being able to see any deviations on a trusted analog scale._
 
@@ -27,20 +27,19 @@ _Me_, I'm an electronics nerd and a handloader. If _you_ are "only" a handloader
 ## Bill of materials
 First, let's get some stuff. If the exact components are not available, see part two for specifications and alternatives.
 
-Scale:
+### Scale:
 - 1x [Lee Safety scale](https://leeprecision.com/powder-handling-lee-safety-powder-scale) 
 - 1x [Small magnet](https://www.electrokit.com/en/magnet-neo35-8mm-x-4mm) for improved eddy dampening. _Makes the beam less whimsy around zero._
-- 100mm length of bendable wire to hold sensors, such as one strand of [solid core 230V 1.5mm$`^2`$ installation cable](https://www.biltema.se/en-se/construction/electrical-installations/installation-cables/ekk/ekk-cable-3g-15-mm2-10-m-2000062454) or [copper wire](https://www.electrokit.com/en/koppartrad-2.00mm-rulle-3.5m).
-- 1x small nut and bolt to attach the bendable wire to the scale.
+- 100mm length of bendable wire just to hold sensors. _I used one strand of [solid core 230V 1.5mm$`^2`$ installation cable](https://www.biltema.se/en-se/construction/electrical-installations/installation-cables/ekk/ekk-cable-3g-15-mm2-10-m-2000062454) but it could have been soft plastic, steel wire etc._
 
-Electronics:
+### Electronics:
 - 1x [Raspberry Pi Pico](https://www.electrokit.com/en/raspberry-pi-pico-h) or [Pico W](https://www.electrokit.com/en/raspberry-pi-pico-wh). _Pico 2 or 2W should work but are not tested._
 - 1x Mini vibrator from a scrapped cellphone.
 - 1x [IR fork sensor](https://www.electrokit.com/en/modul-med-optisk-lasgaffel)
 - 1x [IR reflection/line sensor](https://www.electrokit.com/en/qre1113-linjefoljare-monterad-pa-kort)
 - 1x [Breadboard](https://www.electrokit.com/en/kopplingsdack-400-anslutningar) or [breadboard pattern PCB](https://www.electrokit.com/en/experimentkort-breadboard-400-hal)
   - _If PCB: Consider 2x [20pin headers](https://www.electrokit.com/en/hylslist-2.54mm-1x20p) to make the Pico removable._
-- 2x Small-guage cable for sensors and vibrator, such as scrapped USB cable
+- 2x Scrapped USB or Ethernet cable for attaching sensors and vibrator.
 - 1x Micro-USB cable and power supply (USB powerbank/charger)
 - 2x [100mA PTC fuses](https://www.electrokit.com/en/ptc-sakring-60v-0.1a-aterstallningsbar)
 - 1x [20kohm trimpot](https://www.electrokit.com/en/trimpot-3296w-20kohm-25-varv)
@@ -50,65 +49,66 @@ Electronics:
   - **Note the "C"! Do not use lower-gain BC547 variants!**
 - 2x [PCB push button](https://www.electrokit.com/en/tryckknapp-pcb-6x6x4.8mm-svart)
 
-Powder hopper:
-- 3D printed [parts for powder hopper](./3D-parts/Hopper-parts.stl). _[Preview here](https://a360.co/3W1Bod9)._
+### Powder hopper alt. A, 3D printed:
+- 3D printed PLA [parts for powder hopper](./3D-parts/Hopper-parts.stl). _[Preview here](https://a360.co/3W1Bod9)._
 - 95mm length of 6x8mm aluminium tube [like this](https://www.byggmax.se/r%C3%B6r-aluminium-silver-%C3%B88x11m-p208114) [or this](https://www.stahl-shop24.de/Alu-Rundrohr-8x1mm-1000mm)
 - 1x Powder funnel, or cut off powder bottle top. _HDPE bottles are fine. Avoid PET due to static electricity._
-- 2x 140mm length of M5 threaded rods.
-- 10...12x of M5 nuts.
-- 1x small screw to fasten the tube.
+- 2x 140mm length of M5 threaded rods. Some nuts to fit, and a small screw.
+
+### Powder hopper alt. B, garage style:
+If you don't have access to a 3D printer, you can probably piece something together from stuff in your garage, like [my prototype](./media/DIY_hopper.jpg). The key thing is a _light_ but _non-static_ drop tube at a slight _downward angle_. A _baffle_, such as the funnel makes  powder flow consistently regardless is it's near empty or near full. 
 
 ## Assembly
 Now, let's assemble all the goodies above...
 
-**Vibrator to tube to powder hopper:**
-1. See [overview](./media/3D_parts.jpg), [top](./media/detail_hopper_above.jpg) and [bottom](./media/detail_hopper_below.jpg) images of what your'e trying to accomplish.
+### 1. Make drop tube and attach vibrator
+1. See [top](./media/detail_hopper_above.jpg) and [bottom](./media/detail_hopper_below.jpg) images of what your'e trying to accomplish.
 1. Drill six 5mm holes in the tube, as shown above. Grind the back end to an angle to fit the back of the hopper.
-1. Glue the 3D printed 6x12mm plug into the tube's back end, then drill and screw it to the hopper at the mark (a small dimple 19mm up).
-1. Connect a cable to the vibrator, and attach it to the tube as shown above.
+1. Connect a cable to the vibrator, and attach the vibrator to the tube as shown above.
    - **Make sure to isolate the wires from the tube!**
 
-**Hopper stand:**
-1. Glue the four half-moon shaped parts to the hopper plate, as shown above. _These are really only needed to adjust the angle if the powder runs too fast or slow._
-1. Put some vibration absorber on the hopper plate, such as a rubber band or piece of cloth.
-1. Mount the baseplate, hopper plate and funnel holder on the threaded rods with nuts, as shown above.
+### 2. Attach drop tube to 3D printed powder hopper
+1. See See [overview](./media/3D_parts.jpg) of what your'e trying to accomplish.
+1. Glue the 6x12mm plug into the tube's back end. Then drill and screw it against the mark on the hoppers back (a small dimple 19mm up).
+1. Glue the four half-moon shaped parts to the hopper plate, as shown above. _For adjusting angle if powder flows too fast or slow._
+1. Put something soft, such as a rubber band, under the hopper to facilitate vibration.
+1. Mount the baseplate, hopper plate and funnel holder together as shown above.
 
-**Breadboard/PCB:**
-1. Use a multimeter to check polarity of the push buttons. _On breadboard, you will probably need to twist their legs 90 degrees to make them fit in the right direction._
-1. Attach the Pico and all components according to the [circuit](./media/circuit_diagram.jpg) and [breadboard](./media/breadboard_above.jpg) diagrams.
-
-**Cable to sensors to scale:**
+### 3. Attach sensors to scale
 1. See [left](./media/detail_sensors_left.jpg) and [right](./media/detail_sensors_right.jpg) view images of what your'e trying to accomplish.
 1. Paint a small dab of white paint/tippex/nailpolish to the tip of the beam, to improve IR reflection for sensors.
-1. Solder the sensors to a cable. The `VCC` and `GND` wires can be shared by both sensors, but `OUT` must be separate.
-1. Attach the sensor cable wires to the breadboard/PCB according to the [circuit](./media/circuit_diagram.jpg) and [breadboard](./media/breadboard_above.jpg) diagrams.
+1. Solder the sensors to a cable. _The `VCC` and `GND` wires can be shared by both sensors, but `OUT` must be separate._
+(./media/breadboard_above.jpg) diagrams.
 1. Attach the bendable wire to the scale, by drilling and screwing it as shown above. Take caution not to damage the eddy damper magnets inside! 
-1. Attach the sensors to the bendable wire. _I used solder for the top sensor, and screw for the bottom. Glue would probably work just as well._
+1. Attach the sensors to the bendable wire. _I used solder and a screw. Glue would probably work just as well._
 1. Bend the wire so the sensors "see" the beam in it's bottom and top position. _Notice that the QRE1113 sensor must be really close to the beam, about 1mm._
+
+### 4. Assemble electronics in breadboard/PCB
+1. Use a multimeter to check polarity of the push buttons. _On breadboard, you will probably need to twist their legs 90 degrees to make them fit in the right direction._
+1. Attach the Pico and all components including sensors ans vibrator according to the [circuit](./media/circuit_diagram.jpg) and [breadboard](./media/breadboard_above.jpg) diagrams.
+
+### 5. Program the Pico from a computer
+1. First, download [CircuitPython](https://circuitpython.org/downloads?q=raspberry+pico) firmware `*.UF2` file for your Pico. _I used v9.1.0 but 'latest' should be fine._
+1. Then, write the firmware to Pico like this:
+   1. Make sure your Micro-USB cable is "real" and ont only for charging.
+   1. Press and hold Pico `BOOTSEL` button while connecting it by USB to computer.
+   1. The Pico's firmware volume should now appear as `RPI-RP2` in your file explorer. Let go of `BOOTSEL` button.
+   1. Copy the firmware `*.UF2` file to the `RPI-RP2` volume.
+   1. Firmware auto-installs in a few seconds. The Pico's main storage volume will appear as `CIRCUITPI` or `PICODRIVE`.
+1. Finally, download/save Vibra-trickler [code.py](https://raw.githubusercontent.com/Arve2/Vibra-trickler-3/refs/heads/main/code.py) to the Pico's storage volume.
+
+### 6. That's it (?)
+
 
 
 ------**The text below must be revised. Ignore it for now!**------
-
-
-## Install CircuitPython
-_Before starting, the Pico needs some firmware to run Python code._
-
-On PC...
-1. Download latest version of CircuitPython UF2 firmware file for [Pico W](https://circuitpython.org/board/raspberry_pi_pico_w/) or [Pico](https://circuitpython.org/board/raspberry_pi_pico/). _I used v9.1.0_
-1. On Pico: 
-   - Press and hold `BOOTSEL` button 
-   - Connect to PC with USB cable
-   - Release `BOOTSEL` button.
-1. _The Pico boot sector will now appear as a storage device, `RPI-RP2` in file explorer._
-1. On PC: Copy-paste the UF2 file to the `RPI-RP2` storage device.
-1. _The Pico will reboot, loading the new CircuitPython._
-1. _The Pico file storage will now appear as a storage device, `CRICUITPI` or `PICODRIVE` in file explorer. Usually driveletter `D:` or `E:`_
-
-## Copy vibra-trickler code to Pico root folder
-_Now, let's add code.py - the secret sauce of this project!_
-
-On PC...
-1. Download [.\code.py](https://github.com/arve2/Vibra-trickler-3/blob/main/code.py) to `<Pico driveletter:>\code.py` _If the Pico drive already contains an example file named `code.py`:. Remove or overwrite it._
+TBD:
+- Power up.
+- Start+Stop button+LED.
+- Thonny/REPL
+- Tweaking vibrator.
+- Start with a powder _equivalent_!
+- 
 
 ## Install and configure Thonny editor
 On PC...
@@ -118,21 +118,6 @@ On PC...
    - Port or WebREPL: `CircuitPython CDC control @ COMx` _Auto-detection sometimes fail with CircuitPython._
    - Click `OK`
 1. Thonny should now show, at the bottom right `MicroPython (Raspberry Pi Pico) - Board CDC @ COMX`.
-
-
-## Powder hopper and trickler
-@ToDo: 
-- Upload STL/3mf files to repo.
-- Images of pipe attachment and holes.
-- Build instructions?
-
-See https://a360.co/3Wv0UIo 
-
-Bill of materials:
-- 3D printed parts
-
-- Small screw
-- 3...5V DC vibrator motor (see circuit diagram)
 
 # Design considerations
 I am quite pleased with my original [Vibra-trickler 1](https://youtu.be/v3MtZg-lgy8?si=bmgzrVPSmXZy_p-L) but would like it to throw charges _faster_. This prooved hard because of physical latency/inertia of the scale beam. It was also quite cumbersome to reproduce (solder!) the extensive circuitry. Hence I tried an all-out digital and app-controlled design in [Vibra-trickler 2](https://github.com/Arve2/Vibra-trickler-2). However, the signal noise had to be mitigated, resulting in _computing_ latencies. So the time saved was only a few seconds compared to v1. 
