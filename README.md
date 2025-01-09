@@ -92,22 +92,69 @@ Now, let's assemble all the goodies above...
 1. Finally, download/save Vibra-trickler [code.py](https://raw.githubusercontent.com/Arve2/Vibra-trickler-3/refs/heads/main/code.py) to the Pico's storage volume.
 
 ### 6. Try trickling
-First try trickling sugar, salt or something less volatile than powder! Your kit will need some initial tweaking:
+Your kit will need some initial tweaking before using real powder:
 - Try the buttons for start (left) and stop (right).
 - Measure the voltage to the vibrator. It should be around 3.0 to 3.7V.
 - Let the vibrator run for a while, then make sure it's not feeling hot.
 - Adjust the sensors:
    - _Vibra-trickler registers the sensors default state at power-on, so you may have to power-cycle the vibra-trickler after adjusting sensors._
-   - Top sensor should detect the scale's beam when the set weight of powder is in the pan, to stop the vibration.
-   - Bottom sensor should detect the scale's beam at it's very bottom, but _not_ when the beam lifter (spring) has pushed up the beam a few millimeters.
+   - Top sensor should detect the scale's beam when it reaches the set weight, to stop the vibration.
+   - Bottom sensor should detect the scale's beam at it's very bottom, but _not_ when the beam lifter (spring) has pushed up the beam a few millimeters. _QRE1113 sensors have no LED indicator, but output coltage drops at detection._
 
-After checking the above you can try proper powder and adjust the trickling speeds. 
+After checking the above you can try real powder and adjust the trickling speeds. 
 - High speed (while beam is low) should pour powder fast, but not so fast that the beam jumps up past the set weight. Adjust the flow by tilting the powder hopper back/fourth.
 - Hlow speed (while beam is approaching set weight) should be slow enough that the beam stops immediately at zero when the top sensor is triggered. Adjust the vibrator speed by turning the trim potentiometer.
 
 **That's it!**
 
+# Part 2: Design considerations
+_This is quite a nerdy wall of text, but it might be helpful in troubleshooting or replacing components._
+
+## Scale
+TL;DR: We all hate flimsy Lee scales, but for this project they are great.
+
+I built my [first vibra-trickler](https://youtu.be/v3MtZg-lgy8) around a RCBS 5-10 powder scale. An expensive and stable scale, but that means it's also _slow_: The weight of the beam creates inertia which leads to mechanical latency. I.e. the beam does not rise in a nanosecond, even if you dump 10gr of powder in at once. Thus the powder flow must be kept be painstakingly slow, not to jump past the set weight. The kit works great, but takes ~30s to pour 40gr of powder.
+
+I tried to escape most of the mechanical latency with my [second vibra-trickler](https://github.com/Arve2/Vibra-trickler-2) by using a loadcell and an ADC (Analog to Digital converter). But since the converter output was imprecise, it needed to be smoothed out to a sliding window average. Thus, the weight in the computer would still lag behind the actual powder weight. Dead end. Also, I never felt _really_ sure about the accuracy. "How can I _know_ the charge weight is what the computer tells me?"
+
+A Lee Safety scale by comparison, is annoyingly _fast_. The main critique is that "they are too whimsy"! For hand trickling I  agree. But for automation this is a _feature_! Whimsiness in all it's glory, enough is enough. The DIY part instructs to add an extra eddy damper magnet (Creds to fellow handloader S.S). If Lee did this themselves, RCBS and Redding would loose 50% of their scales sales! Anyways, the extra magnet makes the Lee Safety scale _fast but not whimsy_. Regarding accuracy: I have no reason to consider it less accurate than an expensive RCBS. If the computer or sensors are off, I can easily tell from looking at the beam.
+
+## Vibration
+TL;DR: Lower current --> safer than conventional motors.
+
+To speed up handloading, the powder needs to flow fast. Most rotating motors for such purpose draws current in the order of 0.5 to 1.0 amperes. Call me neurotic, but I do not want that much current anywhere near powder! A small vibrator motor on the other hand, only draws around 75 _milli_-amperes so it can be secured with a fuse rated at 100mA.
+
+Can we be sure all cellphone vibrators will work? Almost, since cell phones use batteries standardizing on 3.7V Li-Ion cells. If the vibrator is too powerful or too feeble, the flow can be adjusted by tweaking some basic pshyics, e.g.
+- Angle of feeding tube,
+- Larger/smaller holes in feeding tube,
+- More/less spongy material under powder hopper,
+- Lowering/raising the funnel to lessen/ingrease mass of powder in hopper,
+
 ------**The text below must be revised. Ignore for now!**------
 
-# Part 2: Design considerations
-TBD...
+TBD:
+- Why hopper/funnel?
+- tweaking code.py PWM
+
+## Sensors
+TBD:
+- ToF vs IR
+- Digital load beams
+- Sensor logic in code.py
+- "digital" fork sensors - not so much
+
+## code.py
+TBD:
+- Logic overview
+- PWM
+- ADC
+- CircuitPy vs MicroPy
+- Altering (using Thonny + URL)
+
+## Raspberry Pi Pico
+TBD:
+- Why not cheap clones?
+
+## 3D printable parts
+TBD: Editable F3D file.
+
