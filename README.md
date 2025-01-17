@@ -113,16 +113,16 @@ _This is quite a nerdy wall of text, but it might be helpful in troubleshooting 
 ## Scale
 TL;DR: We all hate flimsy Lee scales, but for this project they are great.
 
-I built my [first vibra-trickler](https://youtu.be/v3MtZg-lgy8) around a RCBS 5-10 powder scale. An expensive and stable scale, but that means it's also _slow_: The weight of the beam creates inertia which leads to mechanical latency. I.e. the beam does not rise in a nanosecond, even if you dump 10gr of powder in at once. Thus the powder flow must be kept be painstakingly slow, not to jump past the set weight. The kit works great, but takes ~30s to pour 40gr of powder.
+I built my [first vibra-trickler](https://youtu.be/v3MtZg-lgy8) around a RCBS 5-10 powder scale. Very stable, but also _slow_: The weight of the beam creates inertia which leads to mechanical latency. I.e. the beam does not rise in a nanosecond, even if you dump 10gr of powder in at once. Thus the powder flow must be kept be painstakingly slow, not to jump past the set weight..
 
 I tried to escape most of the mechanical latency with my [second vibra-trickler](https://github.com/Arve2/Vibra-trickler-2) by using a loadcell and an ADC (Analog to Digital converter). But since the converter output was imprecise, it needed to be smoothed out to a sliding window average. Thus, the weight in the computer would still lag behind the actual powder weight. Dead end. Also, I never felt _really_ sure about the accuracy. "How can I _know_ the charge weight is what the computer tells me?"
 
 A Lee Safety scale by comparison, is annoyingly _fast_. The main critique is that "they are too whimsy"! For hand trickling I  agree. But for automation this is a _feature_! Whimsiness in all it's glory, enough is enough. The DIY part instructs to add an extra eddy damper magnet (Creds to fellow handloader S.S). If Lee did this themselves, RCBS and Redding would loose 50% of their scales sales! Anyways, the extra magnet makes the Lee Safety scale _fast but not whimsy_. Regarding accuracy: I have no reason to consider it less accurate than an expensive RCBS. If the computer or sensors are off, I can easily tell from looking at the beam.
 
-## Vibration
+## Vibration and flow
 TL;DR: Lower current --> safer than conventional motors.
 
-To speed up handloading, the powder needs to flow fast. Most rotating motors for such purpose draws current in the order of 0.5 to 1.0 amperes. Call me neurotic, but I do not want that much current anywhere near powder! A small vibrator motor on the other hand, only draws around 75 _milli_-amperes so it can be secured with a fuse rated at 100mA.
+To speed up handloading, the powder needs to flow fast. Most rotating motors for such purpose draws current in the order of 0.5 to 1.0 amperes. Call me neurotic, but I do not want that much current anywhere near powder! A small cellphone-style vibrator on the other hand, only draws around 75 _milli_-amperes so it can be secured with a fuse rated at 100mA.
 
 Can we be sure all cellphone vibrators will work? Almost, since cell phones use batteries standardizing on 3.7V Li-Ion cells. If the vibrator is too powerful or too feeble, the flow can be adjusted by tweaking some basic pshyics, e.g.
 - Angle of feeding tube,
@@ -130,18 +130,25 @@ Can we be sure all cellphone vibrators will work? Almost, since cell phones use 
 - More/less spongy material under powder hopper,
 - Lowering/raising the funnel to lessen/ingrease mass of powder in hopper,
 
-------**The text below must be revised. Ignore for now!**------
+The low flow vibration (towards the end) is controlled by the potentiometer. The high flow vibration is hard coded in Python. It _is_ possible to change it though:
+1. Connect the Pico to a PC and use a text editor to modify `code.py`.
+1. Modify the variable `vib_dc_fast = 65535` (about half way down the file). 0 is 0% speed and 65535 is 100%.
 
-TBD:
-- Why hopper/funnel?
-- tweaking code.py PWM
+If the amount of powder in a hopper decreases, is will absorb less vibrations, causing a higher flow though the drop tube. This effect is negated by the funnel acting as a baffle. Similar to a birds feeding table, the amount of powder (or birdseed) is kept consistant irrespective of the amount in the baffle.
 
 ## Sensors
-TBD:
-- ToF vs IR
-- Digital load beams
-- Sensor logic in code.py
-- "digital" fork sensors - not so much
+To handle sensors of all (most?) different kinds, the python code reads all sensors as analog input i.e. _volts_. The values are read and stored at boot. When trickling, a sensor is evaluated as "detecting the beam" if the voltage differs significantly up or down from the boot value.
+
+Some commonly available sensors that I have tried:
+- [TCRT5000 breakout boards](https://grobotronics.com/infrared-sensor-tcrt5000.html): Digital signal. Reflection=3V. No reflection=0V. Very wide angle detection, needs some kind of blinders - [3D-printed](./3D-parts/TCRT5000-blinder.stl), heat shrink tube or simliar.
+- [TCRT5000](https://grobotronics.com/tcrt5000-950nm.html): Analog signal. Voltage varies with distance. Proportionally or disproportionally depending on resistors circuit setup. Wide angle as above.
+- [QRE1113 breakout board](https://www.electrokit.com/en/qre1113-linjefoljare-monterad-pa-kort): Analog signal. Voltage varies with distance. Reflection=lower V. No reflection=higher V. Very short range detection.
+- [Fork sensor breakout board](https://www.electrokit.com/en/modul-med-optisk-lasgaffel): _Should_ be digital signal but works really bad, so the voltage is really more like 2.5V at detection and 1.5V at no detection. Precision is great though!
+- [RPR-220](https://www.electrokit.com/en/rpr-220-fotointerruptor-6mm-800nm): Testing underway...
+
+_I have also tried some ToF distance sensors, including [VL6180X](https://www.electrokit.com/en/avstandssensor-600mm-vl6180x) but the range detection was just too inconsistent._
+
+------**The text below must be revised. Ignore for now!**------
 
 ## code.py
 TBD:
