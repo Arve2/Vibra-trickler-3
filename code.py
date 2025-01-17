@@ -1,157 +1,157 @@
 print('code.py starting...')
-#Upload to /lib first!
-#  ...\lib\adafruit_vl6180x.py
-#  ...\lib\adafruit_bus_device\i2c_device.py
 
-
+# Imports:
 import time
 import board
-import busio
-import pwmio
-import digitalio
-import adafruit_vl6180x
+import pwmio #For PWM output
+import digitalio #For buttons
+import analogio  #For analog sensors
 
-pwm_min =       7000  #Minimum DC, required to run vib. (7000 --> Starts MOST times. 6000 --> Starts SOME times)
-pwm_approach =  10000 #Maximum DC, when approaching target weight.
-pwm_max =       60000 #Maximum DC. (60000 --> 3,9V)
-tof_near =      15.0   #Distance (mm) when scale beam is up near target weight.
-tof_approach =  26.0  #Distance (mm) when scale beam is approaching target weight. I.e. just lifted by "approach to weight" spring.
-#tof_far = 255 #Distance (mm) before approaching target weight.
-
-tof_scl =    board.GP27  #SCL for ToF sensor on leg 32
-tof_sda =    board.GP26  #SDA for ToF sensor on leg 31
-pin_start =  board.GP4   #Start button on leg 6
-pin_stop =   board.GP8   #Stop button on leg 11
-pin_manual = board.GP12  #Manual run button on leg 16
-vib_gp =     board.GP16  #PWM pin to vibrator (transistor array) on leg 21
-
-led = digitalio.DigitalInOut(board.LED) #On-board LED
+# On-board LED:
+led = digitalio.DigitalInOut(board.LED) 
 led.direction = digitalio.Direction.OUTPUT
 
-btn_start = digitalio.DigitalInOut(pin_start) #Start button
-btn_stop = digitalio.DigitalInOut(pin_stop) #Stop button
-btn_manual = digitalio.DigitalInOut(pin_manual) #Manual run button. Not implemented (yet)
-for btn in (btn_start, btn_stop, btn_manual):
-    btn.direction = digitalio.Direction.INPUT
-    btn.pull = digitalio.Pull.UP #Default to high. Pushing button --> GND --> Low.
+# Input from buttons:
+btn_start = digitalio.DigitalInOut(board.GP4)  #Leg 6
+btn_start.direction = digitalio.Direction.INPUT
+btn_start.pull = digitalio.Pull.UP
+btn_start_default = btn_start.value #Store default state at boot
+def start_is_active(): #True if changed since boot
+    return (btn_start.value != btn_start_default) 
 
-i2c = busio.I2C(tof_scl, tof_sda) #I2C bus for ToF sensor
-tof = adafruit_vl6180x.VL6180X(i2c, offset=-0) #ToF sensor object
+btn_stop = digitalio.DigitalInOut(board.GP12) #Leg 16
+btn_stop.direction = digitalio.Direction.INPUT
+btn_stop.pull = digitalio.Pull.UP
+btn_stop_default = btn_stop.value #Store default state at boot
+def stop_is_active(): #True if changed since boot
+    return (btn_stop.value != btn_stop_default) 
 
-pwm = pwmio.PWMOut(vib_gp, frequency=1000, duty_cycle=0) #PWM output object for vib
+# Wait a few seconds for sensors to starta up and stabilize:
+time.sleep(2) 
 
-# Short PWM burst with default/defined duty cycle and time period...
-def pwm_burst(dc=32750, time_period=2.0):
-    dc = int(dc) #No decimals
-    if (dc < 0) or (dc > 65535): #Supported range
-        print('FAIL! Duty cycle out of range (0...65535)')
-    else:
-        print('About to run PWM at', dc,'(out of 65535) for', time_period, 'seconds...')
-        pwm.duty_cycle = dc
-        time.sleep(time_period)
-        pwm.duty_cycle = 0
+# Sensor settings:
+one_adc_volt = 65536 / 3.3 #65536 ADC steps divided by system voltage.
+sensor_detect_volts = 1.0 #Detect sensor deviations over/under this many volts from their value at boot.
+sensor_detect_adc = int(one_adc_volt * sensor_detect_volts) #Convert volts to ADC values for coding.
 
-# Scan for sensor on the I2C bus...
-def tof_scan():
-    i2c.try_lock()
-    print('Scanning I2C bus on', tof_scl, '/', tof_sda, '...')
-    i2c_addresses = i2c.scan()
-    if not i2c_addresses:
-        print('I2C device not found!')
-    for address in i2c_addresses:
-        print("I2C device found. Dec:", address, "Hex:", hex(address)) #Convert to Hex and print
-    i2c.unlock()
+# Sensor readings:
+#  Sensors are considered active if the value has changed more than sensor_detect_volts since boot.
+#  This logic allows for analog (0.0 to 3.3V) as well as digital (0.0 or 3.3V) sensors. It also allows for
+#  both linear output (excitement --> low voltage) and reverse output (exceitement --> high voltage) sensors.
+sens_low =  analogio.AnalogIn(board.A0) #Leg 31 for low position sensor
+sens_low_at_boot = sens_low.value
+def beam_is_low(): #True if sensor value is mostly unchanged since boot (beam still at bottom):
+    unchanged = (sens_low_at_boot - sensor_detect_adc) < sens_low.value < (sens_low_at_boot + sensor_detect_adc)
+    return unchanged
 
-# Get a number of readings from sensor...
-#@Todo: Count in MILLI-seconds!
-def tof_stats(n=80): #80 readings ~ 1.0s when no print()
-    time_start = time.monotonic()
-    array = []
-    for counter in range(n):
-        array.append(tof.range)
-    sorted_array = sorted(array)
-    average = sum(array) / len(array)
-    print('Readings in order of distance:',sorted_array)
-    print(n, 'readings in', round((time.monotonic() - time_start),2), 'seconds')
-    print('Min:',sorted_array[0], 'Max:', sorted_array[-1],'Average: {0:.2f}'.format(average), 'Median (kind of):', sorted_array[int(n/2)])
+sens_high = analogio.AnalogIn(board.A1) #Leg 32 for high position sensor
+sens_high_at_boot = sens_high.value
+def beam_is_high(): #True if sensor value has changed since boot (beam has reached top):
+    unchanged = (sens_high_at_boot - sensor_detect_adc) < sens_high.value < (sens_high_at_boot + sensor_detect_adc)
+    return not unchanged
 
-# Test buttons...
-def btn_test():
-    while True:
-        digit_start = int(not btn_start.value) #Convert Pressed/Low/False to 1
-        digit_stop = int(not btn_stop.value)
-        digit_manual = int(not btn_manual.value)
-        print('Start button:', digit_start, '  Stop button:', digit_stop, '  Manual button:', digit_manual)
-        if 1 in (digit_start, digit_stop, digit_manual): #Shine onboard LED i any button is pressed
-            led.value = True 
-        else:
-            led.value = False
-        time.sleep(0.3)
+def beam_is_mid(): #True if neither sensor has been changed since boot.
+    return (not beam_is_low()) and (not beam_is_high()) 
 
-# Start trickling powder...
+
+# Input from trim potentiometer between AGND@33 and ADC_VREF@35:
+potentiometer = analogio.AnalogIn(board.A2) #Leg 34
+def get_potentiometer_dc(): # Get PWM duty_cycle range minus potentiometer reading. I.e. Clockwise --> Higher speed.
+    return 65535 - potentiometer.value
+
+print(f"Boot values: Low sensor={(sens_low_at_boot / one_adc_volt):.2f}V / {sens_low_at_boot}ADC. High sensor={(sens_high_at_boot / one_adc_volt):.2f}V / {sens_high_at_boot}ADC. Trimpot PWM DC={get_potentiometer_dc()}ADC.")
+
+# PWM for vibrator, and high-speed settings:
+vib = pwmio.PWMOut(board.GP16) #Leg 21 for PWM output to vibrator transistor array
+vib_dc_fast = 65535 #Maximum DC: An int in the range 0...65535. May need tweaking!
+
+# Function for tweaking fixed PWM DC value, e.g. pwm_max. Attach a voltage meter over the vibrator and try different DC.
+def try_vib_fast(dc=vib_dc_fast, time_period=2.0):
+    print('About to run PWM at', dc,'for', time_period, 'seconds...')
+    vib.duty_cycle = dc
+    led.value = True
+    time.sleep(time_period)
+    vib.duty_cycle = 0
+    led.value = False
+
+# Function for tweaking adjustable PWM DC value with potentiometer. Turn the potentiometer to trickle faster/slower.
+def try_vib_slow(time_period=10.0):
+    led.value = True
+    start_time = time.monotonic()
+    while time.monotonic() < (start_time + time_period): #Run during time_period.
+        print('Potentiometer reads',potentiometer.value,'so setting PWM DC to:',get_potentiometer_dc())
+        vib.duty_cycle = get_potentiometer_dc()
+        time.sleep(0.25)
+    vib.duty_cycle = 0
+    led.value = False
+
+# Try input from buttons and sensors:
+def try_inputs(time_period=15.0):
+    start_time = time.monotonic()
+    while time.monotonic() < (start_time + time_period): #Run during time_period.
+        #Use "int(x)" below to get a table-like output with "1/0" instead of "True/False"
+        print(f"Start btn: {int(start_is_active())}. Stop btn: {int(stop_is_active())}. Low sensor: {int(beam_is_low())}@{(sens_low.value / one_adc_volt):.2f}V. High sensor: {int(beam_is_high())}@{(sens_high.value / one_adc_volt):.2f}V. Trimpot PWM DC: {get_potentiometer_dc()}.")
+        time.sleep(0.1)
+
 def trickle():
-    smoothing_array = [100,100,100]
-    should_run = False #Wait for start button before running
-    last_distance = 0
-    phase = 1
+    phase = 0 #Trickling phase (beam/speed). Default to 0 --> waits for start button
+    iterations = 0 #Count iterations for stats
+    start_time = time.monotonic() #Will be set again each time start is pressed.
+    time_period = 60 #Time fuse (seconds). I.e. stop trickling if the kids need my attention and I leave the powder pan off for more than a minute!
     
     while True:
-        #sleep(0.5)
-        
-        #Check button input first...
-        if not btn_stop.value: #Stop button --> Don't run
-            should_run = False
-            pwm.duty_cycle = 0
-            led.value = False #LED off to indicate button down
-        elif not btn_start.value: #Start button --> Run
-            should_run = True
-            last_distance = 999
-            phase = 1
-            led.value = False #LED off to indicate button down
+        time.sleep(0.05) #Slow down a bit. Otherwise ~300 iterations per second.
+        iterations += 1 #Count iterations
+                
+        if start_is_active(): #Start button pressed
+            led.value = False #Indicate button press
+            if phase != 1: #First iteration in this phase:
+                iterations = 1 #Reset counter
+                start_time = time.monotonic()
+                print('\n\n\nStarting at timestamp',start_time)
+            phase = 1 #Change to first active phase
+                
+        elif stop_is_active(): #Stop button pressed
+            led.value = False #Indicate button press
+            if phase != 0: #First iteration in this phase:
+                print('Stopping at timestamp',start_time)
+            phase = 0 #Reset to phase 0
         else:
-            led.value = not led.value #LED flicker to indicate activity/iteration
+            led.value = not led.value #Flicker LED to indicate each cycle
+        
+        if (time.monotonic() - start_time) > time_period: #Don't run forever in case of neglect or errors
+            if phase != 0: #First iteration in this phase:
+                print(f"Stopping because time_period was exceeded at {int(time.monotonic() - start_time)}s / {iterations} iterations...")
+            phase = 0
+        
+        if phase == 0: #If phase set to 0: Stop PWM and skip the rest of this iteration
+            vib.duty_cycle = 0
+            continue 
+        
+        if beam_is_low(): #Beam resting on bottom --> full speed!
+            if phase == 1 and vib.duty_cycle == 0: #First iteration in this phase:
+                print(f"Phase is 1, but PWM not yet started at 0 seconds / {iterations} iterations...")
+            if phase == 1:
+                vib.duty_cycle = vib_dc_fast
+                
+        elif beam_is_mid(): #Beam between bottom and top --> slow down to potentiometer adjusted speed!
+            if phase < 2: #First iteration in this phase:
+                if start_is_active():
+                    print('Start button pressed while beam in phase 2.')
+                else:
+                    print('Letting beam settle before phase 2')
+                    vib.duty_cycle = 0
+                    time.sleep(1.5) #Wait a moment to let beam stabilize
+                print(f"Starting phase 2 at {int(time.monotonic() - start_time)}s / {iterations} iterations...")
+                phase = 2
+            if phase == 2:
+                vib.duty_cycle = get_potentiometer_dc()
+                
+        elif beam_is_high(): #Beam up at top --> powder throw complete.
+            if phase > 0: #First iteration in this phase:
+                print(f"Done! Resetting to phase 0 at {int(time.monotonic() - start_time)}s / {iterations} iterations...")
+                phase = 0
+            if phase == 0:
+                vib.duty_cycle = 0
             
-        #ToF distance to PWM DC logic...
-        smoothing_array.append(tof.range)
-        smoothing_array.pop(0)
-        distance = sum(smoothing_array) / len(smoothing_array)
-        
-        if distance >= last_distance:
-            continue
-        else:
-            last_distance = distance
-        
-        if distance <= tof_near or phase == 3: #Phase 3: Beam near --> Stop running...
-            should_run = False
-            phase = 3
-            led.value = False #LED off to indicate stop
-        elif distance <= tof_approach or phase == 2: #Phase 2: Beam approaching target --> Decrease DC...
-            if phase != 2: #First iteration in phase 2 --> Give the beam some rest
-                print('Starting phase 2')
-                pwm.duty_cycle = 0
-                time.sleep(1.5)
-            phase = 2
-            #Calculate DC inversely proportional to distance, and in acceptable range...
-            tof_fraction = (distance - tof_near) / (tof_approach - tof_near)
-            dc = tof_fraction * (pwm_approach - pwm_min) + pwm_min
-            dc = int(dc)
-            if dc < pwm_min:
-                dc = pwm_min #Never less than Min.
-            if dc > pwm_approach:
-                dc = pwm_approach #Never more than Max. (Probably superflous.)
-            #should_run = False #############################################################
-        else: #Phase 1: Beam down, not yet approaching target --> Max DC
-            phase = 1
-            dc = pwm_max
-
-        #Control PWM DC...
-        if should_run:
-            pwm.duty_cycle = dc
-        else:
-            pwm.duty_cycle = 0
-        
-        #Console output - this steals a lot of time!
-        print('Running:',int(should_run),' Distance: {0:.2f}'.format(distance),'Phase:',phase,'PWM DC:',dc)
-        
-
 trickle() #Auto-start trickling. Thonny/REPL console will interrupt this to enable editing.
