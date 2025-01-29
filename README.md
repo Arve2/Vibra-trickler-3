@@ -32,7 +32,7 @@ First, let's get some stuff. If the exact components are not available, see part
 
 ### Electronic parts:
 - 1x [Raspberry Pi Pico](https://www.electrokit.com/en/raspberry-pi-pico-h) or [Pico W](https://www.electrokit.com/en/raspberry-pi-pico-wh). _Pico 2 or 2W should also work but I have not tested._
-- 1x [Mini vibrator](https://www.aliexpress.com/item/1005008051767872.html) (from a scrapped cellphone).
+- 1x Mini vibrator from [AliExpress](https://www.aliexpress.com/item/1005006636006743.html) or a scrapped cellphone.
 - 1x [IR fork sensor](https://www.electrokit.com/en/modul-med-optisk-lasgaffel)
 - 1x [IR reflection/line sensor](https://www.electrokit.com/en/qre1113-linjefoljare-monterad-pa-kort)
 - 1x [Breadboard](https://www.electrokit.com/en/kopplingsdack-400-anslutningar) or [breadboard pattern PCB](https://www.electrokit.com/en/experimentkort-breadboard-400-hal)
@@ -64,7 +64,7 @@ Now, let's assemble all the goodies above...
 
 ### 2. Attach drop tube to 3D printed powder hopper
 1. See [overview](./media/3D_parts.jpg) of what your'e trying to accomplish.
-1. Glue the 6x12mm plug into the tube's back end. Then drill and screw it against the mark on the hoppers back (a small dimple 19mm up).
+1. Glue the 6x12mm plug into the tube's back end. Then drill and screw it against the mark on the hopper's back.
 1. Glue the four half-moon shaped parts to the hopper plate, as shown above. _For adjusting angle if powder flows too fast or slow._
 1. Put something soft, such as a rubber band, under the hopper to facilitate vibration.
 1. Mount the baseplate, hopper plate and funnel holder together as shown above.
@@ -159,9 +159,10 @@ TBD:
 - Altering (using Thonny + URL)
 
 ## Raspberry Pi Pico
-TBD:
-- Why not cheap clones?
+The vibra-trickler will work with any Raspberry Pi Pico/PicoH/PicoW/PicoWH. You could probably try a clone or variant of Raspberry Pi Pico, but be aware: Bad clones may not provide sufficient voltage to the vibrator, even at at maximum PWM setting.
 
 ## 3D printable parts
-TBD: Editable F3D file.
+The [3D parts](./3D-parts) for this project are not required, but might help. If you don't have access to a 3D printer, you can probably make something up, similar to my first/trial ["home brew"](./media/DIY_hopper.jpg) hopper. It is, however, important to note the funnel/baffle arrangement to get a consistent powder flow. 
+
+`Hopper-parts.stl` is ready to slice and print. `Hopper-parts.f3d` is for anyone wanting to make changes to the design using Fusion 360 CAD. `TCRT5000-blinder.stl` might help decreasing detection angle if using a TCRT5000 detector.
 
