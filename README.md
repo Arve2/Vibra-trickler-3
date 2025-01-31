@@ -44,7 +44,7 @@ First, let's get some stuff. If the exact components are not available, see part
 - 1x [1kohm resistor](https://www.electrokit.com/en/motstand-kolfilm-0.25w-1kohm-1k)
 - 1x [1N4007 diode](https://www.electrokit.com/en/1n4007-do-41-1000v-1a)
 - 1x [BC547C transistor](https://www.electrokit.com/en/bc547c-to-92-npn-45v-100ma).
-  - **Note the "C"! Do not use lower-gain BC547A or BC547C!**
+  - **Note the "C"! Do not use lower-gain BC547A or BC547B!**
 - 2x [Push buttons](https://www.electrokit.com/en/tryckknapp-pcb-6x6x4.8mm-svart)
 
 ### Powder hopper:
@@ -64,7 +64,7 @@ Now, let's assemble all the goodies above...
 
 ### 2. Attach drop tube to 3D printed powder hopper
 1. See [overview](./media/3D_parts.jpg) of what your'e trying to accomplish.
-1. Glue the 6x12mm plug into the tube's back end. Then drill and screw it against the mark on the hopper's back.
+1. Glue the 6x12mm plug into the tube's back end. Then drill and screw it against the hole at the back of the hopper.
 1. Glue the four half-moon shaped parts to the hopper plate, as shown above. _For adjusting angle if powder flows too fast or slow._
 1. Put something soft, such as a rubber band, under the hopper to facilitate vibration.
 1. Mount the baseplate, hopper plate and funnel holder together as shown above.
@@ -99,11 +99,11 @@ Your kit will need some initial tweaking before using real powder:
 - Adjust the sensors:
    - _Vibra-trickler registers the sensors default state at power-on, so you may have to power-cycle the vibra-trickler after adjusting sensors._
    - Top sensor should detect the scale's beam when it reaches the set weight, to stop the vibration.
-   - Bottom sensor should detect the scale's beam at it's very bottom, but _not_ when the beam lifter (spring) has pushed up the beam a few millimeters. _QRE1113 sensors have no LED indicator, but output coltage drops at detection._
+   - Bottom sensor should detect the scale's beam at it's very bottom, but _not_ when the beam lifter (spring) has pushed up the beam a few millimeters. _QRE1113 sensors have no LED indicator, but output voltage drops at detection._
 
 After checking the above you can try real powder and adjust the trickling speeds. 
 - High speed (while beam is low) should pour powder fast, but not so fast that the beam jumps up past the set weight. Adjust the flow by tilting the powder hopper back/fourth.
-- Hlow speed (while beam is approaching set weight) should be slow enough that the beam stops immediately at zero when the top sensor is triggered. Adjust the vibrator speed by turning the trim potentiometer.
+- Low speed (while beam is approaching set weight) should be slow enough that the beam stops immediately at zero when the top sensor is triggered. Adjust the vibrator speed by turning the trim potentiometer.
 
 **That's it!**
 
@@ -124,7 +124,7 @@ TL;DR: Lower current --> safer than conventional motors.
 
 To speed up handloading, the powder needs to flow fast. Most rotating motors for such purpose draws current in the order of 0.5 to 1.0 amperes. Call me neurotic, but I do not want that much current anywhere near powder! A small cellphone-style vibrator on the other hand, only draws around 75 _milli_-amperes so it can be secured with a fuse rated at 100mA.
 
-Can we be sure all cellphone vibrators will work? Almost, since cell phones use batteries standardizing on 3.7V Li-Ion cells. If the vibrator is too powerful or too feeble, the flow can be adjusted by tweaking some basic pshyics, e.g.
+If the vibrator is too powerful or too feeble, the flow can be adjusted by tweaking some basic pshyics, such as
 - Angle of feeding tube,
 - Larger/smaller holes in feeding tube,
 - More/less spongy material under powder hopper,
@@ -137,7 +137,9 @@ The low flow vibration (towards the end) is controlled by the potentiometer. The
 If the amount of powder in a hopper decreases, is will absorb less vibrations, causing a higher flow though the drop tube. This effect is negated by the funnel acting as a baffle. Similar to a birds feeding table, the amount of powder (or birdseed) is kept consistant irrespective of the amount in the baffle.
 
 ## Sensors
-To handle sensors of all (most?) different kinds, the python code reads all sensors as analog input i.e. _volts_. The values are read and stored at boot. When trickling, a sensor is evaluated as "detecting the beam" if the voltage differs significantly up or down from the boot value.
+TL;DR: you could probably go with almost any sensor breakout module.
+
+To handle sensors of all (most?) different kinds, the python code reads all sensors as analog input i.e. _volts_. The values are read and stored at boot. While trickling, a sensor is considered as "detecting change" if the voltage differs significantly up or down from the boot value. Note that some line detecting sensors are "discharge time" sensors, such as [this QRE1113 breakout](https://www.sparkfun.com/sparkfun-line-sensor-breakout-qre1113-digital.html) - as they react in _time_ rather than _voltage_, they are not compatible with this project.
 
 Some commonly available sensors that I have tried:
 - [TCRT5000 breakout boards](https://grobotronics.com/infrared-sensor-tcrt5000.html): Digital signal. Reflection=3V. No reflection=0V. Very wide angle detection, needs some kind of blinders - [3D-printed](./3D-parts/TCRT5000-blinder.stl), heat shrink tube or simliar.
@@ -150,13 +152,16 @@ _I have also tried some ToF distance sensors, including [VL6180X](https://www.el
 
 ------**The text below must be revised. Ignore for now!**------
 
-## code.py
+## Code.py and CircuitPython
+The Python script [code.py](./code.py) is the main and only software component for this project. It is auto-started when the Pico powers up. No need to be gentle about power cycles - the Pico runs _firmware_ rather than an operating system. So just pull/insert the USB power cable til reboot.
+
 TBD:
 - Logic overview
 - PWM
 - ADC
-- CircuitPy vs MicroPy
-- Altering (using Thonny + URL)
+- Extra functions for tweaking.
+
+Vibra-tricker is based on CurcuitPython, a minimal selection of regular Python. CircuitPython is less advanced than MicroPython, but has the advantage of presenting the Pico as a removable USB storage device - i.e. easier for non-nerds. If you _are_ a nerd, it is possible to edit the code using [Thonny](https://thonny.org/) or similar.
 
 ## Raspberry Pi Pico
 The vibra-trickler will work with any Raspberry Pi Pico/PicoH/PicoW/PicoWH. You could probably try a clone or variant of Raspberry Pi Pico, but be aware: Bad clones may not provide sufficient voltage to the vibrator, even at at maximum PWM setting.
@@ -164,5 +169,5 @@ The vibra-trickler will work with any Raspberry Pi Pico/PicoH/PicoW/PicoWH. You 
 ## 3D printable parts
 The [3D parts](./3D-parts) for this project are not required, but might help. If you don't have access to a 3D printer, you can probably make something up, similar to my first/trial ["home brew"](./media/DIY_hopper.jpg) hopper. It is, however, important to note the funnel/baffle arrangement to get a consistent powder flow. 
 
-`Hopper-parts.stl` is ready to slice and print. `Hopper-parts.f3d` is for anyone wanting to make changes to the design using Fusion 360 CAD. `TCRT5000-blinder.stl` might help decreasing detection angle if using a TCRT5000 detector.
+`Hopper-parts.stl` is ready to slice and print. `Hopper-parts.f3d` is for anyone wanting to make changes to the design using Fusion 360 CAD. `TCRT5000-blinder.stl` is an attempt to decrease the detection angle if using a TCRT5000 sensor.
 
