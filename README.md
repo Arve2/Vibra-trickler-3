@@ -139,29 +139,48 @@ If the amount of powder in a hopper decreases, is will absorb less vibrations, c
 ## Sensors
 TL;DR: you could probably go with almost any sensor breakout module.
 
-To handle sensors of all (most?) different kinds, the python code reads all sensors as analog input i.e. _volts_. The values are read and stored at boot. While trickling, a sensor is considered as "detecting change" if the voltage differs significantly up or down from the boot value. Note that some line detecting sensors are "discharge time" sensors, such as [this QRE1113 breakout](https://www.sparkfun.com/sparkfun-line-sensor-breakout-qre1113-digital.html) - as they react in _time_ rather than _voltage_, they are not compatible with this project.
+To handle sensors of all (most?) different kinds, `code.py` reads all sensors as analog input i.e. _volts_. The values are read and stored at boot. While trickling, a sensor is considered as "detecting change" if the voltage differs significantly up or down from the boot value. Note that some line detecting sensors are "discharge time" sensors, such as [this QRE1113 breakout](https://www.sparkfun.com/sparkfun-line-sensor-breakout-qre1113-digital.html) - as they react in _time_ rather than _voltage_, they are not compatible with this project.
 
 Some commonly available sensors that I have tried:
 - [TCRT5000 breakout boards](https://grobotronics.com/infrared-sensor-tcrt5000.html): Digital signal. Reflection=3V. No reflection=0V. Very wide angle detection, needs some kind of blinders - [3D-printed](./3D-parts/TCRT5000-blinder.stl), heat shrink tube or simliar.
 - [TCRT5000](https://grobotronics.com/tcrt5000-950nm.html): Analog signal. Voltage varies with distance. Proportionally or disproportionally depending on resistors circuit setup. Wide angle as above.
 - [QRE1113 breakout board](https://www.electrokit.com/en/qre1113-linjefoljare-monterad-pa-kort): Analog signal. Voltage varies with distance. Reflection=lower V. No reflection=higher V. Very short range detection.
 - [Fork sensor breakout board](https://www.electrokit.com/en/modul-med-optisk-lasgaffel): _Should_ be digital signal but works really bad, so the voltage is really more like 2.5V at detection and 1.5V at no detection. Precision is great though!
-- [RPR-220](https://www.electrokit.com/en/rpr-220-fotointerruptor-6mm-800nm): Testing underway...
+- [RPR-220](https://www.electrokit.com/en/rpr-220-fotointerruptor-6mm-800nm): Analog signal. Voltage varies with distance. Optimal detection range and angle! The downside is you need to solder your own breakout board around it. 47kohm to the transisor and 100ohm to the IR LED worked for me.
 
 _I have also tried some ToF distance sensors, including [VL6180X](https://www.electrokit.com/en/avstandssensor-600mm-vl6180x) but the range detection was just too inconsistent._
 
 ------**The text below must be revised. Ignore for now!**------
 
-## Code.py and CircuitPython
-The Python script [code.py](./code.py) is the main and only software component for this project. It is auto-started when the Pico powers up. No need to be gentle about power cycles - the Pico runs _firmware_ rather than an operating system. So just pull/insert the USB power cable til reboot.
+## Code.py
+The Python script [code.py](./code.py) is the main and only software component for this project. It is auto-started when the Pico powers up. No need to be gentle about power cycles - the Pico runs _firmware_ rather than an operating system. So just pull/insert the USB power cable to reboot it.
+
+### Start/Stop buttons
+The buttons are handled as digital inputs. Pressing a button connects it's pin to `GND`. Similar to the sensors, the buttons default values are stored at boot. They are then considered 'pressed' if their _value changes_. Thus, both NC (Normally CLosed) or NO (Normally Open) buttons may be used.
+
+### ADC, for sensors and trimpot
+The Pico has three ADC (Analog to Digital Converter) input pins. One is used for the bottom sensor, one for the top sensor, and one for the trim potentiometer. Consider these as 'volt meters'. The variable `sensor_detect_volts` controls how much variation in voltage (up or down) is needed to consider a sensor as "detecting change".
+
+### PWM, for vibrator voltage
+The Pico provides PWM ([Pulse Width Modification](https://en.wikipedia.org/wiki/Pulse-width_modulation)) to control the voltage going to the vibrator by varying the PWM DC (Duty Cycle).
+- At high speed, the PWM DC is set to 100% _(But still closer to 3 than 5 volts - maybe due to losses in the PTC fuse?)._
+- At slow speed, the PWM DC is set to 100% minus the ADC input from the trim potentiometer.
+- At stop, the PWMDC is set to 0%.
+
+### trickle() function
+TBD:
+- Main loop
+- Logic overview
+- Stopped by Thonny
+
+### LED
+The Pico's onboard LED blinks to indicate activity and turns dark to indicate start/stop button press.
 
 TBD:
-- Logic overview
-- PWM
-- ADC
 - Extra functions for tweaking.
 
-Vibra-tricker is based on CurcuitPython, a minimal selection of regular Python. CircuitPython is less advanced than MicroPython, but has the advantage of presenting the Pico as a removable USB storage device - i.e. easier for non-nerds. If you _are_ a nerd, it is possible to edit the code using [Thonny](https://thonny.org/) or similar.
+## CircuitPython
+Vibra-tricker is coded in CurcuitPython, a minimal selection of regular Python. CircuitPython is less advanced than MicroPython, but has the advantage of presenting the Pico as a removable USB storage device - i.e. easier for non-nerds. If you _are_ a nerd, it is possible to edit the code using [Thonny](https://thonny.org/) or similar.
 
 ## Raspberry Pi Pico
 The vibra-trickler will work with any Raspberry Pi Pico/PicoH/PicoW/PicoWH. You could probably try a clone or variant of Raspberry Pi Pico, but be aware: Bad clones may not provide sufficient voltage to the vibrator, even at at maximum PWM setting.
@@ -171,3 +190,17 @@ The [3D parts](./3D-parts) for this project are not required, but might help. If
 
 `Hopper-parts.stl` is ready to slice and print. `Hopper-parts.f3d` is for anyone wanting to make changes to the design using Fusion 360 CAD. `TCRT5000-blinder.stl` is an attempt to decrease the detection angle if using a TCRT5000 sensor.
 
+## Small components
+### Buttons 
+TBD: Use anything?
+
+### Transistor array
+TBD:
+- Calculations of current --> Why exactly 1k/BC547C?
+
+### Diode
+TBD:
+- Flyback protection.
+- _Probably_ not neccessary
+
+### Trim potentiometer
