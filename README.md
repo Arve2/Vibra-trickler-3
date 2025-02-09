@@ -150,8 +150,6 @@ Some commonly available sensors that I have tried:
 
 _I have also tried some ToF distance sensors, including [VL6180X](https://www.electrokit.com/en/avstandssensor-600mm-vl6180x) but the range detection was just too inconsistent._
 
-------**The text below must be revised. Ignore for now!**------
-
 ## Code.py
 The Python script [code.py](./code.py) is the main and only software component for this project. It is auto-started when the Pico powers up. No need to be gentle about power cycles - the Pico runs _firmware_ rather than an operating system. So just pull/insert the USB power cable to reboot it.
 
@@ -159,31 +157,51 @@ The Python script [code.py](./code.py) is the main and only software component f
 The buttons are handled as digital inputs. Pressing a button connects it's pin to `GND`. Similar to the sensors, the buttons default values are stored at boot. They are then considered 'pressed' if their _value changes_. Thus, both NC (Normally CLosed) or NO (Normally Open) buttons may be used.
 
 ### ADC, for sensors and trimpot
-The Pico has three ADC (Analog to Digital Converter) input pins. One is used for the bottom sensor, one for the top sensor, and one for the trim potentiometer. Consider these as 'volt meters'. The variable `sensor_detect_volts` controls how much variation in voltage (up or down) is needed to consider a sensor as "detecting change".
+The Pico has three ADC (Analog to Digital Converter) input pins. One is used for the bottom sensor, one for the top sensor, and one for the trim potentiometer. Consider these as volt meters in the range 0.0 to 3.3V. The variable `sensor_detect_volts` controls how much variation in voltage (up or down) is needed to consider a sensor as "detecting change".
 
 ### PWM, for vibrator voltage
 The Pico provides PWM ([Pulse Width Modification](https://en.wikipedia.org/wiki/Pulse-width_modulation)) to control the voltage going to the vibrator by varying the PWM DC (Duty Cycle).
 - At high speed, the PWM DC is set to 100% _(But still closer to 3 than 5 volts - maybe due to losses in the PTC fuse?)._
 - At slow speed, the PWM DC is set to 100% minus the ADC input from the trim potentiometer.
-- At stop, the PWMDC is set to 0%.
+- At stop, the PWM DC is set to 0%.
 
-### trickle() function
-TBD:
-- Main loop
-- Logic overview
-- Stopped by Thonny
+### Function trickle()
+This is the main loop that auto-starts at boot and iterates every ~1/20 to ~1/10 second. It checks the input from buttons and sensors, plus a 60s time-fuse. It then adjusts the output PWM DC accordingly. The onboad LED flickers with each iteration, and turns dark to indicate buttons pressed.
 
-### LED
-The Pico's onboard LED blinks to indicate activity and turns dark to indicate start/stop button press.
+The normal trickling process is as follows:
+1. Booting up the Pico
+   - resets trickling phase to `0` --> PWM DC = `0%` and
+   - stores the sensors default ADC values. _The beam is resting at the bottom of the scale, i.e. detected by the low sensor._
+1. Pressing start button
+   - resets the time-fuse to 0s,
+   - sets trickling phase to `1` --> PWM DC = `100%` --> powder drops fast.
+1. Neither the low or high sensor detects the beam, so assume it's started moving up. This sets trickling phase to `2` -->
+   - First, PWM DC = `0%` to let the beam stop swinging for a short while.
+   - Then, PWM DC = `100% - trimpot ADC %`. _Trimpot value is refreshed in every iteration so you can tweak the slow speed 'live'._
+1. The top sensor detects the beam, so it must be at zero - done! --> reset trickling phase to `0`.
 
-TBD:
-- Extra functions for tweaking.
+Phase `0` may also be triggered by
+- pressing stop button,
+- the time passed since start exceeding 60s.
+
+If connecting to a PC running Thonny, the trickle() loop will be terminated to enable editing. If started in a Thonny terminal, you will also be able to see the number of iterations and seconds spent in each trickling phase, and the total.
+
+### Function try_vib_fast()
+For tweaking/troubleshooting of the fast speed PWM DC, by running the vibrator for a given number of seconds at a given DC (int range 0...65535). Only available through Thonny or other Python terminal.
+
+### Function try_vib_slow()
+For tweaking/troubleshooting of the slow speed PWM DC, by running the vibrator for a given number of seconds while turning the trimpot. Only available through Thonny or other Python terminal.
+
+### Function try_inputs()
+For tweaking/troubleshooting of input from buttons, sensors and trimpot by showing their live status/voltages. Only available through Thonny or other Python terminal.
 
 ## CircuitPython
 Vibra-tricker is coded in CurcuitPython, a minimal selection of regular Python. CircuitPython is less advanced than MicroPython, but has the advantage of presenting the Pico as a removable USB storage device - i.e. easier for non-nerds. If you _are_ a nerd, it is possible to edit the code using [Thonny](https://thonny.org/) or similar.
 
 ## Raspberry Pi Pico
-The vibra-trickler will work with any Raspberry Pi Pico/PicoH/PicoW/PicoWH. You could probably try a clone or variant of Raspberry Pi Pico, but be aware: Bad clones may not provide sufficient voltage to the vibrator, even at at maximum PWM setting.
+The vibra-trickler will work with any Raspberry Pi Pico/PicoH/PicoW/PicoWH. You could probably try a clone or variant of Raspberry Pi Pico, but be aware: Bad clones may not provide sufficient voltage to the vibrator, even at at maximum PWM setting. 
+
+It 'should' be possible to adopt code.py to run on some completely different micro computer, such as ESP32. Bear in mind that not all commands may work on standard MicroPython. Also, the PWM pin and 3xADC pins need to be adjusted.
 
 ## 3D printable parts
 The [3D parts](./3D-parts) for this project are not required, but might help. If you don't have access to a 3D printer, you can probably make something up, similar to my first/trial ["home brew"](./media/DIY_hopper.jpg) hopper. It is, however, important to note the funnel/baffle arrangement to get a consistent powder flow. 
@@ -191,16 +209,23 @@ The [3D parts](./3D-parts) for this project are not required, but might help. If
 `Hopper-parts.stl` is ready to slice and print. `Hopper-parts.f3d` is for anyone wanting to make changes to the design using Fusion 360 CAD. `TCRT5000-blinder.stl` is an attempt to decrease the detection angle if using a TCRT5000 sensor.
 
 ## Small components
-### Buttons 
-TBD: Use anything?
+### Transistor (array)
+The Pico GPIO pins are can not (at least _should not_ ) provide enough current to run a vibrator motor at ~75mA. It _can_ however provide a few milliamps through the 1kohm resistor to the BC547C transistor. The transistor then acts as an amplifier to let current flow from the high power `VBUS` pin, through the vibrator, to `GND`. 
 
-### Transistor array
-TBD:
-- Calculations of current --> Why exactly 1k/BC547C?
+`BC547C` looks small, but it can
+- provide a _100mA current_ (when fully off/on),
+- _switch fast_ enough between fully off/on from the Pico PWM changes,
+- _amplify_ a fem milliamps to well above 100mA, thus keeping it out of the active (heat producing) range.
+
+Carefully consider the above if trying to replace the transistor with another part! "Powerful" transistors may lack in speed and amplification. Other small signal transistors may lack in max current and amplification.
 
 ### Diode
-TBD:
-- Flyback protection.
-- _Probably_ not neccessary
+When current drops fast (such as in PWM) through an inductive load (such as a motor), a higher voltage will 'bounce' back from the load. I honestly don't think this voltage spike could harm a Pico, but hey - a diode costs almost nothing. You could probably go with any 1N4### diode or similar, or skip it completely if you dare.
 
 ### Trim potentiometer
+This components only acts as a voltage selector to feed an ADC (which then affects the PWM DC through Python code). I chose a multi-turn potentiometer because it needs to be quite precise. The resistance is probably _not_ critical - anywhere between 1k and 100k should work.
+
+It's _technically_ possible to control the slow flow speed using only code. But tweaking the speed in code is not very _practical_. E.g. tweaking the trickling speed when changing powder types would require a PC and Thonny editor every time.
+
+### Buttons 
+Most buttons should work. Just make sure they are correctly oriented to open/close the circuit from Pico GPIO-pin to Pico GND.
