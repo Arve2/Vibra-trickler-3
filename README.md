@@ -199,7 +199,9 @@ For tweaking/troubleshooting of input from buttons, sensors and trimpot by showi
 Vibra-tricker is coded in CurcuitPython, a minimal selection of regular Python. CircuitPython is less advanced than MicroPython, but has the advantage of presenting the Pico as a removable USB storage device - i.e. easier for non-nerds. If you _are_ a nerd, it is possible to edit the code using [Thonny](https://thonny.org/) or similar.
 
 ## Raspberry Pi Pico
-The vibra-trickler will work with any Raspberry Pi Pico/PicoH/PicoW/PicoWH. You could probably try a clone or variant of Raspberry Pi Pico, but be aware: Bad clones may not provide sufficient voltage to the vibrator, even at at maximum PWM setting. 
+The vibra-trickler will work with any Raspberry Pi Pico/PicoH/PicoW/PicoWH. You could probably try a clone or variant of Raspberry Pi Pico, but be aware: 
+1. Bad clones may not provide sufficient voltage to the vibrator, even at at maximum PWM setting.
+1. The pinout/positions may be completely different than an 'original' _Raspberry Pi_ Pico.
 
 It 'should' be possible to adopt code.py to run on some completely different micro computer, such as ESP32. Bear in mind that not all commands may work on standard MicroPython. Also, the PWM pin and 3xADC pins need to be adjusted.
 
