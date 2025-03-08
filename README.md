@@ -79,7 +79,7 @@ Now, let's assemble all the goodies above...
 
 ### 4. Assemble electronics in breadboard/PCB
 1. Use a multimeter to check polarity of the push buttons. _On breadboard, you will probably need to twist their legs 90 degrees to make them fit in the right direction._
-1. Attach the Pico and all components including sensors ans vibrator according to the [circuit](./media/circuit_diagram.jpg) and [breadboard](./media/breadboard_above.jpg) diagrams.
+1. Attach the Pico and all components including sensors ans vibrator according to the [circuit](./media/circuit_diagram.jpg) and [breadboard](./media/breadboard_above.jpg) diagrams. _If using a [breadboard PCB](https://www.electrokit.com/en/experimentkort-breadboard-400-hal), the result will be [this](./media/PCB_above.jpg) dandy._
 
 ### 5. Program the Pico from a computer
 1. First, download [CircuitPython](https://circuitpython.org/downloads?q=raspberry+pico) firmware `*.UF2` file for your Pico. _I used v9.1.0 but 'latest' should be fine._
